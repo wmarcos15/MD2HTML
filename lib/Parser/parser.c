@@ -1,6 +1,4 @@
 #import "./parser.h"
-#include <assert.h>
-#include <stdio.h>
 
 int current = 0, start = 0;
 int list_index = 0, in_list = 0;
@@ -105,17 +103,38 @@ int consumeNumber(char *source, int i) {
     return result * sign;
 }
 
-void hash(char* source) {
+void hash(FILE* file, char* source) {
 	while (peek(source) == '#') advance(source);
 	int len = current - start;
 	while (peek(source) == ' ') advance(source);
 	start = current;
 	while (peek(source) != '\n' && !isAtEnd(source)) advance(source);
-	printf("h%d: %s", len, substring(source, start, current));
+	hHTML(file, len, substring(source, start, current - 1));
 }
 
+void number(char* source) {
+	int num = consumeNumber(source, current - 1);
+	if (!in_list && num == 1) {
+		in_list = 1;
+		list_index = 1;
+		advance(source); //consume space (. is consumed automatically)
+		start = current;
+		while (peek(source) != '\n' && !isAtEnd(source)) advance(source);
+		printf("%d. %s\n", num, substring(source, start, current - 1));
+	} else if (num - list_index == 1) {
+		list_index++;
+		advance(source); //consume space (. is consumed automatically)
+		start = current;
+		while (peek(source) != '\n' && !isAtEnd(source)) advance(source);
+		printf("%d. %s\n", num, substring(source, start, current - 1));
+	} else {
+		list_index = 0;
+		//close list if necessary
+		//string
+	}
+}
 
-void parse(char* source) {
+void parse(FILE* file, char* source) {
 	char c = advance(source);
 	switch (c) {
 		case '\n':
@@ -124,18 +143,19 @@ void parse(char* source) {
 			consume(source, c);
 			break;
 		case '#':
-			hash(source);
+			hash(file, source);
 			break;
 	}
 	if (isNumber(c)) number(source);
 }
 
-void parseFile(char* filename) {
+void parseFile(char* src) {
 	char source[MAX_SIZE];
-	readFileContent(source, filename);
+	readFileContent(source, src);
+	FILE* html = beginHTML("TESTindex.html");
 	while (!isAtEnd(source)) {
 		start = current;
-		parse(source);
+		parse(html, source);
 	}
-	// close html
+	closeHTML(html);
 }

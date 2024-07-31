@@ -6,9 +6,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <string.h>
+#include "../HTML_Utils/html_utils.h"
 
 #define MAX_SIZE 1000000
 
-void parseFile(char* filename);
+void parseFile(char* src);
 
 #endif
