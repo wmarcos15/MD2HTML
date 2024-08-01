@@ -12,62 +12,73 @@ void style(FILE* file) {
 		return;
 	}
 
-	const char* css = 
-		"/* Dark Mode Styles */\n"
+	const char* css = "/* Main body style */\n"
 		"body {\n"
-		"    background-color: #121212;\n"
-		"    color: #e0e0e0;\n"
-		"    font-family: 'Roboto', sans-serif;\n"
+		"    background-color: #121212; /* Dark background */\n"
+		"    color: #E0E0E0; /* Light text color */\n"
+		"    font-family: 'Roboto', sans-serif; /* Modern font */\n"
 		"    margin: 0;\n"
 		"    padding: 0;\n"
-		"    line-height: 1.6;\n"
-		"    display: block;\n"
-		"    width: 80%%;\n"
-		"    max-width: 800px;\n"
-		"    margin-left: auto;\n"
-		"    margin-right: auto;\n"
+		"    display: flex;\n"
+		"    justify-content: center; /* Center horizontally */\n"
+		"    align-items: center;\n"
+		"    height: 100vh;\n"
+		"    box-sizing: border-box;\n"
 		"}\n"
 		"\n"
-		"/* Heading Styles */\n"
-		"h1, h2, h3 {\n"
-		"    margin-top: 0;\n"
-		"    font-weight: 700;\n"
-		"    color: #ffffff;\n"
+		"/* Container for the text */\n"
+		".main_text {\n"
+		"    max-width: 800px; /* Maximum width */\n"
+		"    margin: 20px; /* Margin on the sides */\n"
+		"    padding: 20px; /* Padding inside the container */\n"
+		"    box-sizing: border-box;\n"
 		"}\n"
 		"\n"
+		"/* Header styles */\n"
 		"h1 {\n"
-		"    font-size: 2.5rem;\n"
+		"    font-size: 2.5em;\n"
+		"    margin-bottom: 0.5em;\n"
+		"    color: #FF8A65; /* Accent color */\n"
 		"}\n"
 		"\n"
 		"h2 {\n"
-		"    font-size: 2rem;\n"
+		"    font-size: 2em;\n"
+		"    margin-bottom: 0.5em;\n"
+		"    color: #FFAB91; /* Slightly different accent */\n"
 		"}\n"
 		"\n"
 		"h3 {\n"
-		"    font-size: 1.75rem;\n"
+		"    font-size: 1.75em;\n"
+		"    margin-bottom: 0.5em;\n"
+		"    color: #FFCCBC; /* Slightly different accent */\n"
 		"}\n"
 		"\n"
-		"/* List Styles */\n"
+		"/* List styles */\n"
 		"ul, ol {\n"
-		"    margin: 1rem 0;\n"
-		"    padding: 0 1.5rem;\n"
+		"    margin: 1em 0;\n"
+		"    padding: 0 1.5em; /* Indent the list */\n"
 		"}\n"
 		"\n"
 		"li {\n"
-		"    margin: 0.5rem 0;\n"
+		"    margin-bottom: 0.5em;\n"
+		"    color: #BDBDBD; /* Slightly lighter text color */\n"
 		"}\n"
 		"\n"
-		"/* Custom Blockquote Class */\n"
+		"/* Custom blockquote class */\n"
 		".blockquote {\n"
-		"    background-color: rgba(255, 255, 255, 0.1);\n"
-		"    border-left: 4px solid #ff9800;\n"
-		"    margin: 1.5rem 0;\n"
-		"    padding: 1rem 1.5rem;\n"
+		"    background-color: rgba(255, 255, 255, 0.1); /* Transparent background */\n"
+		"    padding: 15px;\n"
+		"    border-left: 5px solid #FF8A65; /* Accent border */\n"
+		"    margin: 1em 0;\n"
+		"    color: #E0E0E0; /* Light text color */\n"
 		"    font-style: italic;\n"
-		"    color: #cccccc;\n"
+		"}\n"
+		"\n"
+		"/* Flexbox for centering the main_text div */\n"
+		"body > div {\n"
+		"    height: 100%;\n"
+		"    width: 100%;\n"
 		"}\n";
-
-
 
 	fprintf(file, "%s", css);
 }
@@ -88,6 +99,7 @@ void startHTML(FILE * file) {
 	fprintf(file, "    </style>\n");
 	fprintf(file, "</head>\n");
 	fprintf(file, "<body>\n");
+	fprintf(file, "<div class=\"main_text\">\n");
 }
 
 void hHTML(FILE* file, int type, char* lexeme) {
@@ -101,6 +113,7 @@ FILE* beginHTML(char* name) {
 }
 
 void closeHTML(FILE* file) {
+	fprintf(file, "</div>\n");
 	fprintf(file, "</body>\n");
 	fprintf(file, "</html>\n");
 	fclose(file);
