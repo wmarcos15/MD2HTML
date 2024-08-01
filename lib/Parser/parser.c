@@ -195,30 +195,6 @@ void number(FILE* file, char* source) {
 	} while(!isAtEnd(source));
 
 	fprintf(file, "</ol>\n");
-
-	/*  */
-	/* if (!in_list && num == 1) { */
-	/* 	in_list = 1; */
-	/* 	list_index = 1; */
-	/*  */
-	/* 	advance(source); //consume space (. is consumed automatically) */
-	/*  */
-	/* 	start = current; */
-	/* 	fprintf(file, "<ol> */
-	/* 	consumeLexeme(file, source); */
-	/*  */
-	/* 	printf("%d. %s\n", num, substring(source, start, current - 1)); */
-	/* } else if (num - list_index == 1) { */
-	/* 	list_index++; */
-	/* 	advance(source); //consume space (. is consumed automatically) */
-	/* 	start = current; */
-	/* 	while (peek(source) != '\n' && !isAtEnd(source)) advance(source); */
-	/* 	printf("%d. %s\n", num, substring(source, start, current - 1)); */
-	/* } else { */
-	/* 	list_index = 0; */
-	/* 	//close list if necessary */
-	/* 	//string */
-	/* } */
 }
 
 void parse(FILE* file, char* source) {
