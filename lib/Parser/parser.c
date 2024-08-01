@@ -1,5 +1,4 @@
 #import "./parser.h"
-#include <stdio.h>
 
 int current = 0, start = 0;
 int list_index = 0, in_list = 0;
@@ -115,7 +114,8 @@ void hash(FILE* file, char* source) {
 }
 
 int doubleAst(char* source) {
-	return peek(source) == '*' && peekNext(source) == '*';
+	return (peek(source) == '*' && peekNext(source) == '*') ||
+		   (peek(source) == '*' && peekPrevious(source) == '*');
 }
 
 void bold(FILE* file, char* source) {
@@ -134,7 +134,20 @@ void bold(FILE* file, char* source) {
 		advance(source);
 	}
 }
-void italic(char* source) {
+
+void italic(FILE* file, char* source) {
+	advance(source);
+	int bold_start = current;
+	while (!isAtEnd(source) && peek(source) != '*' && peek(source) != '\n') {
+		advance(source);
+	}
+	if (isAtEnd(source) || peek(source) == '\n') {
+		fprintf(file, "%s", substring(source, bold_start - 1, current - 1));
+		return;
+	} else if (peek(source) == '*') {
+		fprintf(file, "<i>%s</i>", substring(source, bold_start, current - 1));
+		advance(source);
+	}
 }
 
 int isNewLine(char* source) {
@@ -143,12 +156,13 @@ int isNewLine(char* source) {
 
 void consumeLexeme(FILE* file, char* source) {
 	while (!isAtEnd(source) && peek(source) != '\n') {
-		fprintf(file, "%c", peek(source));
-		advance(source);
 		if (peek(source) == '*') {
 			if (peekNext(source) == '*') bold(file, source);
-			else italic(source);
+			else italic(file, source);
 		}
+		if (isAtEnd(source) || peek(source) == '\n') return;
+		fprintf(file, "%c", peek(source));
+		advance(source);
 	}
 }
 
