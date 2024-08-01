@@ -1,4 +1,5 @@
 #import "./parser.h"
+#include <stdio.h>
 
 int current = 0, start = 0;
 int list_index = 0, in_list = 0;
@@ -100,6 +101,7 @@ int consumeNumber(char *source, int i) {
 		i++;
         advance(source);
     }
+	current--;
     return result * sign;
 }
 
@@ -112,26 +114,97 @@ void hash(FILE* file, char* source) {
 	hHTML(file, len, substring(source, start, current - 1));
 }
 
-void number(char* source) {
-	int num = consumeNumber(source, current - 1);
-	if (!in_list && num == 1) {
-		in_list = 1;
-		list_index = 1;
-		advance(source); //consume space (. is consumed automatically)
-		start = current;
-		while (peek(source) != '\n' && !isAtEnd(source)) advance(source);
-		printf("%d. %s\n", num, substring(source, start, current - 1));
-	} else if (num - list_index == 1) {
-		list_index++;
-		advance(source); //consume space (. is consumed automatically)
-		start = current;
-		while (peek(source) != '\n' && !isAtEnd(source)) advance(source);
-		printf("%d. %s\n", num, substring(source, start, current - 1));
-	} else {
-		list_index = 0;
-		//close list if necessary
-		//string
+int doubleAst(char* source) {
+	return peek(source) == '*' && peekNext(source) == '*';
+}
+
+void bold(FILE* file, char* source) {
+	advance(source);
+	advance(source);
+	int bold_start = current;
+	while (!isAtEnd(source) && !doubleAst(source) && peek(source) != '\n') {
+		advance(source);
 	}
+	if (isAtEnd(source) || peek(source) == '\n') {
+		fprintf(file, "%s", substring(source, bold_start - 2, current - 1));
+		return;
+	} else if (doubleAst(source)) {
+		fprintf(file, "<b>%s</b>", substring(source, bold_start, current - 1));
+		advance(source);
+		advance(source);
+	}
+}
+void italic(char* source) {
+}
+
+int isNewLine(char* source) {
+	return peek(source) == '\n' && peekNext(source) == '\n';
+}
+
+void consumeLexeme(FILE* file, char* source) {
+	while (!isAtEnd(source) && peek(source) != '\n') {
+		fprintf(file, "%c", peek(source));
+		advance(source);
+		if (peek(source) == '*') {
+			if (peekNext(source) == '*') bold(file, source);
+			else italic(source);
+		}
+	}
+}
+
+void number(FILE* file, char* source) {
+	int num = consumeNumber(source, current - 1);
+	int new_num = 0;
+	if (!(peek(source) == '.' && peekNext(source) == ' ' ) || num != 1) {
+		/* current = start; */
+		/* string(file, source); */
+		return;
+	}
+	fprintf(file, "<ol>\n");
+	do {
+		// Consume the '.' and the ' '
+		advance(source);
+		advance(source);
+
+		fprintf(file, "<li>");
+		consumeLexeme(file, source);
+		fprintf(file, "</li>\n");
+
+		if (isAtEnd(source) || !isNumber(peekNext(source))) break;
+		advance(source);
+		advance(source);
+
+		new_num = consumeNumber(source, current - 1);
+		if ((new_num - num) != 1) break;
+		else num = new_num;
+
+	} while(!isAtEnd(source));
+
+	fprintf(file, "</ol>\n");
+
+	/*  */
+	/* if (!in_list && num == 1) { */
+	/* 	in_list = 1; */
+	/* 	list_index = 1; */
+	/*  */
+	/* 	advance(source); //consume space (. is consumed automatically) */
+	/*  */
+	/* 	start = current; */
+	/* 	fprintf(file, "<ol> */
+	/* 	consumeLexeme(file, source); */
+	/*  */
+	/* 	printf("%d. %s\n", num, substring(source, start, current - 1)); */
+	/* } else if (num - list_index == 1) { */
+	/* 	list_index++; */
+	/* 	advance(source); //consume space (. is consumed automatically) */
+	/* 	start = current; */
+	/* 	while (peek(source) != '\n' && !isAtEnd(source)) advance(source); */
+	/* 	printf("%d. %s\n", num, substring(source, start, current - 1)); */
+	/* } else { */
+	/* 	list_index = 0; */
+	/* 	//close list if necessary */
+	/* 	//string */
+	/* } */
 }
 
 void parse(FILE* file, char* source) {
@@ -146,7 +219,7 @@ void parse(FILE* file, char* source) {
 			hash(file, source);
 			break;
 	}
-	if (isNumber(c)) number(source);
+	if (isNumber(c)) number(file, source);
 }
 
 void parseFile(char* src) {
