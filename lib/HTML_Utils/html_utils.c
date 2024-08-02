@@ -29,9 +29,10 @@ void style(FILE* file) {
 		"/* Container for the text */\n"
 		".main_text {\n"
 		"    max-width: 800px; /* Maximum width */\n"
-		"    margin: 20px; /* Margin on the sides */\n"
+		"    margin: 2vw; /* Margin on the sides */\n"
 		"    padding: 20px; /* Padding inside the container */\n"
 		"    box-sizing: border-box;\n"
+		"    text-align: justify;\n"
 		"}\n"
 		"\n"
 		"/* Header styles */\n"
@@ -93,7 +94,7 @@ void startHTML(FILE * file) {
 	fprintf(file, "<head>\n");
 	fprintf(file, "    <meta charset=\"UTF-8\">\n");
 	fprintf(file, "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-	fprintf(file, "    <title>Boilerplate HTML</title>\n");
+	fprintf(file, "    <title>MD2HTML</title>\n");
 	fprintf(file, "    <style>\n");
 	style(file);
 	fprintf(file, "    </style>\n");
@@ -107,7 +108,20 @@ void hHTML(FILE* file, int type, char* lexeme) {
 }
 
 FILE* beginHTML(char* name) {
-	FILE* html = fopen(name, "w");
+	char filename[500000];
+	int i = 0;
+	while (name[i] != '.') {
+		filename[i] = name[i];
+		i++;
+	}
+	filename[i] = '.';
+	filename[i+1] = 'h';
+	filename[i+2] = 't';
+	filename[i+3] = 'm';
+	filename[i+4] = 'l';
+	filename[i+5] = '\0';
+
+	FILE* html = fopen(filename, "w");
 	startHTML(html);
 	return html;
 }

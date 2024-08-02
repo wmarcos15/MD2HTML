@@ -2,7 +2,10 @@
 
 int main(int argc, char *argv[])
 {
-	char filename[] = "./test.md";
-	parseFile(filename);
+	if (argc != 2) {
+		perror("Usage: md2html filename");
+		return 1;
+	}
+	parseFile(argv[1]);
 	return 0;
 }

@@ -57,8 +57,7 @@ char peek(char* source) {
 
 char peekPrevious(char* source) {
 	if (current - 2 < 0) {
-		perror("Index out of range");
-		exit(EXIT_FAILURE);
+		return 0;
 	}
 	return source[current - 1];
 }
@@ -69,6 +68,11 @@ char peekNext(char* source) {
 		exit(EXIT_FAILURE);
 	}
 	return source[current + 1];
+}
+
+int isNewLineToken(char c) {
+	return (c == '#' ||
+			c == '>');
 }
 
 char consume(char* source, char c) {
@@ -105,12 +109,15 @@ int consumeNumber(char *source, int i) {
 }
 
 void hash(FILE* file, char* source) {
-	while (peek(source) == '#') advance(source);
-	int len = current - start;
+	int n = 1;
+	while (peek(source) == '#') {
+		advance(source);
+		n++;
+	}
 	while (peek(source) == ' ') advance(source);
 	start = current;
 	while (peek(source) != '\n' && !isAtEnd(source)) advance(source);
-	hHTML(file, len, substring(source, start, current - 1));
+	hHTML(file, n, substring(source, start, current));
 }
 
 int doubleAst(char* source) {
@@ -166,12 +173,32 @@ void consumeLexeme(FILE* file, char* source) {
 	}
 }
 
+void consumeString(FILE* file, char* source) {
+	while (!isAtEnd(source) && !isNewLine(source)) {
+		if (peek(source) == '*') {
+			if (peekNext(source) == '*') bold(file, source);
+			else italic(file, source);
+		}
+		if (isAtEnd(source) || isNewLine(source) || isNewLineToken(peek(source))) return;
+		fprintf(file, "%c", peek(source));
+		advance(source);
+	}
+}
+
+void string(FILE* file, char* source) {
+	fprintf(file, "<p>");
+	current--;
+	consumeString(file, source); 
+	fprintf(file, "</p>");
+	return;
+}
+
 void number(FILE* file, char* source) {
 	int num = consumeNumber(source, current - 1);
 	int new_num = 0;
 	if (!(peek(source) == '.' && peekNext(source) == ' ' ) || num != 1) {
-		/* current = start; */
-		/* string(file, source); */
+		current = start + 1;
+		string(file, source);
 		return;
 	}
 	fprintf(file, "<ol>\n");
@@ -197,25 +224,34 @@ void number(FILE* file, char* source) {
 	fprintf(file, "</ol>\n");
 }
 
+void blockquote(FILE* file, char* source) {
+	while (peek(source) == ' ') advance(source);
+	fprintf(file, "<div class=\"blockquote\">");
+	consumeLexeme(file, source);
+	fprintf(file, "</div>");
+}
+
+
 void parse(FILE* file, char* source) {
 	char c = advance(source);
+	while (c == ' ' || c == '\n') c = advance(source);
 	switch (c) {
-		case '\n':
-		case ' ':
-			start = current;
-			consume(source, c);
-			break;
 		case '#':
 			hash(file, source);
+			while (c == ' ' || c == '\n') c = advance(source);
+			break;
+		case '>':
+			blockquote(file, source);
 			break;
 	}
 	if (isNumber(c)) number(file, source);
+	else if (!isNewLineToken(c)) string(file, source);
 }
 
 void parseFile(char* src) {
 	char source[MAX_SIZE];
 	readFileContent(source, src);
-	FILE* html = beginHTML("TESTindex.html");
+	FILE* html = beginHTML(src);
 	while (!isAtEnd(source)) {
 		start = current;
 		parse(html, source);
