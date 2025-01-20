@@ -1,4 +1,5 @@
 #import "./parser.h"
+#include <stdio.h>
 
 int current = 0, start = 0;
 int list_index = 0, in_list = 0;
@@ -68,6 +69,14 @@ char peekNext(char* source) {
 		exit(EXIT_FAILURE);
 	}
 	return source[current + 1];
+}
+
+char peekNextNext(char* source) {
+	if (current > strlen(source)) {
+		perror("Index out of range");
+		exit(EXIT_FAILURE);
+	}
+	return source[current + 2];
 }
 
 int isNewLineToken(char c) {
@@ -232,10 +241,30 @@ void blockquote(FILE* file, char* source) {
 }
 
 
+void unorderedList(FILE* file, char* source) {
+	fprintf(file, "<ul>\n");
+
+	do {
+		advance(source); // Consume the ' '
+		fprintf(file, "<li>");
+		consumeLexeme(file, source);
+		fprintf(file, "</li>\n");
+		if (isAtEnd(source) || peekNext(source) != '-' || peekNextNext(source) != ' ') break;
+		advance(source); // Consume the '\n'
+		advance(source); // Consume the '-'
+	} while(!isAtEnd(source));
+
+	fprintf(file, "</ul>\n");
+	advance(source); // Consume linging char
+}
+
 void parse(FILE* file, char* source) {
 	char c = advance(source);
 	while (c == ' ' || c == '\n') c = advance(source);
 	switch (c) {
+		case '-':
+			if (peek(source) == ' ') unorderedList(file, source);
+			break;
 		case '#':
 			hash(file, source);
 			while (c == ' ' || c == '\n') c = advance(source);
