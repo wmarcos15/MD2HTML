@@ -189,8 +189,7 @@ void consumeString(FILE* file, char* source) {
 		if (peek(source) == '_') {
 			if (peekNext(source) == '_') bold(file, source);
 			else italic(file, source);
-		}
-		if (peek(source) == '*') {
+		} else if (peek(source) == '*') {
 			if (peekNext(source) == '*') bold(file, source);
 			else italic(file, source);
 		} 
