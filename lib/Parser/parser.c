@@ -129,22 +129,24 @@ void hash(FILE* file, char* source) {
 	hHTML(file, n, substring(source, start, current));
 }
 
-int doubleAst(char* source) {
+int doubleBoldChar(char* source) {
 	return (peek(source) == '*' && peekNext(source) == '*') ||
-		   (peek(source) == '*' && peekPrevious(source) == '*');
+		   (peek(source) == '*' && peekPrevious(source) == '*') ||
+		(peek(source) == '_' && peekNext(source) == '_') ||
+		   (peek(source) == '_' && peekPrevious(source) == '_');
 }
 
 void bold(FILE* file, char* source) {
 	advance(source);
 	advance(source);
 	int bold_start = current;
-	while (!isAtEnd(source) && !doubleAst(source) && peek(source) != '\n') {
+	while (!isAtEnd(source) && !doubleBoldChar(source) && peek(source) != '\n') {
 		advance(source);
 	}
 	if (isAtEnd(source) || peek(source) == '\n') {
 		fprintf(file, "%s", substring(source, bold_start - 2, current - 1));
 		return;
-	} else if (doubleAst(source)) {
+	} else if (doubleBoldChar(source)) {
 		fprintf(file, "<b>%s</b>", substring(source, bold_start, current - 1));
 		advance(source);
 		advance(source);
@@ -154,13 +156,13 @@ void bold(FILE* file, char* source) {
 void italic(FILE* file, char* source) {
 	advance(source);
 	int bold_start = current;
-	while (!isAtEnd(source) && peek(source) != '*' && peek(source) != '\n') {
+	while (!isAtEnd(source) && peek(source) != '*' && peek(source) != '_' && peek(source) != '\n') {
 		advance(source);
 	}
 	if (isAtEnd(source) || peek(source) == '\n') {
 		fprintf(file, "%s", substring(source, bold_start - 1, current - 1));
 		return;
-	} else if (peek(source) == '*') {
+	} else if (peek(source) == '*' || peek(source) == '_') {
 		fprintf(file, "<i>%s</i>", substring(source, bold_start, current - 1));
 		advance(source);
 	}
@@ -184,10 +186,14 @@ void consumeLexeme(FILE* file, char* source) {
 
 void consumeString(FILE* file, char* source) {
 	while (!isAtEnd(source) && !isNewLine(source)) {
+		if (peek(source) == '_') {
+			if (peekNext(source) == '_') bold(file, source);
+			else italic(file, source);
+		}
 		if (peek(source) == '*') {
 			if (peekNext(source) == '*') bold(file, source);
 			else italic(file, source);
-		}
+		} 
 		if (isAtEnd(source) || isNewLine(source) || isNewLineToken(peek(source))) return;
 		fprintf(file, "%c", peek(source));
 		advance(source);
