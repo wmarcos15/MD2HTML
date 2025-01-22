@@ -1,10 +1,4 @@
 #include "./html_utils.h"
-// Boilerplate
-// Write text
-// Open pTag
-// Close pTag
-// Open bTag
-// Close bTag
 
 void style(FILE* file) {
 	if (file == NULL) {
@@ -73,6 +67,14 @@ void style(FILE* file) {
 		"    margin: 1em 0;\n"
 		"    color: #E0E0E0; /* Light text color */\n"
 		"    font-style: italic;\n"
+		"}\n"
+		"\n"
+		"/* Custom code class */\n"
+		".code {\n"
+		"    background-color: rgba(255, 99, 71, 0.1); /* Transparent background */\n"
+		"    padding: 15px;\n"
+		"    color: #E0E0E0; /* Light text color */\n"
+		"	 font-family: \"Lucida Console\", \"Courier New\", monospace;\n"
 		"}\n"
 		"\n"
 		"/* Flexbox for centering the main_text div */\n"

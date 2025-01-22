@@ -1,4 +1,5 @@
 #import "./parser.h"
+#include <string.h>
 #include <stdio.h>
 
 int current = 0, start = 0;
@@ -194,8 +195,7 @@ void consumeString(FILE* file, char* source) {
 			else italic(file, source);
 		} 
 		if (isAtEnd(source) || isNewLine(source) || isNewLineToken(peek(source))) return;
-		fprintf(file, "%c", peek(source));
-		advance(source);
+		fprintf(file, "%c", advance(source));
 	}
 }
 
@@ -263,6 +263,42 @@ void unorderedList(FILE* file, char* source) {
 	advance(source); // Consume linging char
 }
 
+int isThreeBacktick(char* source, int pos) {
+	if (source[pos] == '`' && source[pos + 1] == '`' && source[pos + 2] == '`') return 1;
+	return 0;
+}
+
+void codeBlock(FILE* file, char* source) {
+	while (peek(source) == '`') advance(source); // Consume all '`'
+
+	int substring_start = current;
+	int substring_end = current;
+	while (!isThreeBacktick(source, substring_end)) {
+		substring_end++;
+		if ((substring_end + 2) >= strlen(source)) {
+			return string(file, source);
+		}
+	}
+
+	char* substring_in_block = substring(source, substring_start, substring_end - 1);
+
+	fprintf(file, "<div class=\"code\">");
+
+	// Write the text in lines 
+	int i = 0;
+	fprintf(file, "<p>");
+	while (i < strlen(substring_in_block)) {
+		fprintf(file, "%c", substring_in_block[i++]);
+		if (substring_in_block[i] == '\n') {
+			fprintf(file, "<br>");
+		}
+	}
+	fprintf(file, "</p>");
+
+	fprintf(file, "</div>");
+	current = substring_end + 4;
+}
+
 void parse(FILE* file, char* source) {
 	char c = advance(source);
 	while (c == ' ' || c == '\n') c = advance(source);
@@ -277,6 +313,11 @@ void parse(FILE* file, char* source) {
 		case '>':
 			blockquote(file, source);
 			break;
+		case '`':
+			if (peek(source) == '`'	&& peekNext(source) == '`') {
+				codeBlock(file, source);
+			}
+			return;
 	}
 	if (isNumber(c)) number(file, source);
 	else if (!isNewLineToken(c)) string(file, source);
